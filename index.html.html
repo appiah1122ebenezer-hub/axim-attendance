@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Axim District · The Church of Pentecost</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f1ea;
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(184, 148, 46, 0.06) 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, rgba(0, 80, 200, 0.04) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* ═══════════════ LOGIN OVERLAY ═══════════════ */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0a2a44 0%, #1a3a5a 50%, #0a2a44 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 24px;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 32px;
+            padding: 44px 40px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(184, 148, 46, 0.25);
+            text-align: center;
+            animation: loginPop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes loginPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .login-card .lock-icon {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #b8942e, #d4af37);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(184, 148, 46, 0.35);
+        }
+        .login-card .lock-icon i { font-size: 30px; color: #fff; }
+
+        .login-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px; color: #0a2a44;
+            margin-bottom: 6px; letter-spacing: -0.02em;
+        }
+        .login-card h2 span { color: #b8942e; }
+        .login-card .login-sub { font-size: 13px; color: #5a6e8a; margin-bottom: 28px; }
+
+        .login-card .input-wrap { position: relative; margin-bottom: 18px; text-align: left; }
+        .login-card .input-wrap label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: #1a3a5a; margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .login-card .input-wrap input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 1.5px solid #d8dce4;
+            border-radius: 14px;
+            font-size: 15px; font-family: 'Inter', sans-serif;
+            background: #fcfaf7; color: #0a2a44;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-card .input-wrap input:focus {
+            border-color: #b8942e;
+            box-shadow: 0 0 0 4px rgba(184, 148, 46, 0.12);
+            background: #fff;
+        }
+        .login-card .input-wrap .field-icon {
+            position: absolute; left: 16px; bottom: 15px;
+            color: #b8942e; font-size: 15px;
+        }
+
+        .login-btn {
+            width: 100%; padding: 14px; border: none;
+            border-radius: 14px; background: #b8942e; color: #fff;
+            font-size: 15px; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(184, 148, 46, 0.35);
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-top: 6px;
+        }
+        .login-btn:hover {
+            background: #a68224; transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(184, 148, 46, 0.4);
+        }
+
+        .login-error {
+            display: none; font-size: 13px; color: #d94f14;
+            background: rgba(217, 79, 20, 0.08);
+            padding: 10px 14px; border-radius: 10px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(217, 79, 20, 0.15);
+        }
+        .login-error.show { display: block; animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .login-cancel {
+            margin-top: 12px;
+            background: none;
+            border: none;
+            color: #5a6e8a;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            padding: 6px;
+            text-decoration: underline;
+        }
+        .login-cancel:hover { color: #b8942e; }
+
+        /* ═══════════════ MODAL (Change Password) ═══════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 42, 68, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 24px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 36px 34px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(184, 148, 46, 0.2);
+            animation: loginPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .modal-card .modal-icon {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0a2a44, #1a3a5a);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 18px;
+        }
+        .modal-card .modal-icon i { font-size: 26px; color: #b8942e; }
+
+        .modal-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: #0a2a44;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+        .modal-card .modal-sub {
+            font-size: 13px;
+            color: #5a6e8a;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal-card .input-wrap {
+            position: relative;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .modal-card .input-wrap label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a3a5a;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .modal-card .input-wrap input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: 1.5px solid #d8dce4;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #fcfaf7;
+            color: #0a2a44;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .modal-card .input-wrap input:focus {
+            border-color: #b8942e;
+            box-shadow: 0 0 0 4px rgba(184, 148, 46, 0.12);
+            background: #fff;
+        }
+        .modal-card .input-wrap .field-icon {
+            position: absolute;
+            left: 14px;
+            bottom: 13px;
+            color: #b8942e;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .modal-message {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .modal-message.error {
+            display: block;
+            background: rgba(217, 79, 20, 0.08);
+            color: #d94f14;
+            border: 1px solid rgba(217, 79, 20, 0.15);
+        }
+        .modal-message.success {
+            display: block;
+            background: rgba(42, 157, 143, 0.1);
+            color: #1f7a6f;
+            border: 1px solid rgba(42, 157, 143, 0.2);
+        }
+
+        /* ═══════════════ APP CONTAINER ═══════════════ */
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08), 0 10px 30px rgba(0, 0, 0, 0.04);
+            padding: 40px 44px 48px;
+            border: 1px solid rgba(184, 148, 46, 0.15);
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(184, 148, 46, 0.2);
+        }
+
+        .header-left h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px; font-weight: 600;
+            color: #0a2a44; letter-spacing: -0.02em; line-height: 1.2;
+        }
+        .header-left h1 span { color: #b8942e; }
+        .header-left .sub {
+            font-size: 13px; font-weight: 400;
+            color: #4a5e7a; letter-spacing: 0.3px; margin-top: 4px;
+        }
+        .header-left .sub i { color: #b8942e; margin-right: 4px; }
+
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border: none;
+            border-radius: 14px; font-size: 14px; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #b8942e; color: #fff;
+            box-shadow: 0 4px 12px rgba(184, 148, 46, 0.25);
+        }
+        .btn-primary:hover {
+            background: #a68224; transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(184, 148, 46, 0.30);
+        }
+
+        .btn-secondary { background: #e8e2d8; color: #3a4e6a; }
+        .btn-secondary:hover { background: #d5cdc0; }
+
+        .btn-pdf {
+            background: #0a2a44; color: #fff;
+            box-shadow: 0 4px 12px rgba(10, 42, 68, 0.25);
+        }
+        .btn-pdf:hover { background: #1a3a5a; transform: translateY(-2px); }
+
+        .btn-logout { background: #f5e6e0; color: #d94f14; }
+        .btn-logout:hover { background: #eed5cc; }
+
+        .btn-admin {
+            background: #0a2a44; color: #fff;
+            box-shadow: 0 4px 12px rgba(10, 42, 68, 0.2);
+        }
+        .btn-admin:hover {
+            background: #1a3a5a; transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(10, 42, 68, 0.3);
+        }
+
+        .btn-settings {
+            background: #e8e2d8;
+            color: #0a2a44;
+        }
+        .btn-settings:hover {
+            background: #d5cdc0;
+            transform: translateY(-2px);
+        }
+
+        /* ── Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: #ffffff; border-radius: 20px;
+            padding: 18px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card .number {
+            font-size: 32px; font-weight: 800;
+            color: #0a2a44; line-height: 1.2;
+        }
+        .stat-card .number.gold { color: #b8942e; }
+        .stat-card .label {
+            font-size: 12px; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: #5a6e8a; margin-top: 2px;
+        }
+        .stat-card .sub-label { font-size: 11px; color: #8a9aaa; margin-top: 4px; }
+
+        /* ── Category Breakdown ── */
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 32px;
+        }
+
+        .breakdown-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 16px; background: #fcfaf7;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        .breakdown-item .cat-count {
+            font-size: 18px; font-weight: 700; color: #b8942e;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 12px; border-radius: 100px;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.2px; text-transform: capitalize;
+        }
+        .cat-pastor { background: #d4af37; color: #fff; }
+        .cat-apostle { background: #7c5cbf; color: #fff; }
+        .cat-visitors { background: #3a86c4; color: #fff; }
+        .cat-members { background: #2a9d8f; color: #fff; }
+        .cat-deacons { background: #e76f51; color: #fff; }
+        .cat-elders { background: #6c584c; color: #fff; }
+        .cat-children { background: #e9b74a; color: #1a3a5a; }
+
+        /* ── Total Attendance Section ── */
+        .total-attendance-section {
+            background: linear-gradient(135deg, #0a2a44 0%, #1a3a5a 100%);
+            border-radius: 28px;
+            padding: 32px 36px;
+            margin-bottom: 32px;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(10, 42, 68, 0.2);
+        }
+
+        .total-attendance-section .section-title {
+            font-size: 20px; font-weight: 700;
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .total-attendance-section .section-title i {
+            color: #b8942e; font-size: 24px;
+        }
+
+        .total-attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .total-stat {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border-radius: 16px; padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .total-stat .big-number {
+            font-size: 42px; font-weight: 800;
+            color: #b8942e; line-height: 1.2;
+        }
+        .total-stat .stat-label {
+            font-size: 13px; color: #aabbcc;
+            margin-top: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .total-stat .stat-detail {
+            font-size: 13px; color: #88aacc;
+            margin-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 8px;
+        }
+
+        .total-attendance-actions {
+            display: flex; gap: 12px;
+            margin-top: 24px; flex-wrap: wrap;
+        }
+        .total-attendance-actions .btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .total-attendance-actions .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .total-attendance-actions .btn-primary {
+            background: #b8942e; border: none;
+        }
+        .total-attendance-actions .btn-primary:hover { background: #a68224; }
+
+        /* ── Grid ── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .public-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 28px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 820px) {
+            .grid { grid-template-columns: 1fr; gap: 28px; }
+            .app { padding: 24px 16px 28px; border-radius: 32px; }
+            .header { flex-direction: column; align-items: stretch; }
+            .header-actions { justify-content: stretch; }
+            .header-actions .btn { flex: 1; justify-content: center; }
+            .total-attendance-section { padding: 24px 20px; }
+            .total-attendance-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 28px 30px 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .card-title {
+            font-size: 16px; font-weight: 600;
+            color: #0a2a44; display: flex;
+            align-items: center; gap: 10px; margin-bottom: 22px;
+        }
+        .card-title i { color: #b8942e; font-size: 18px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-size: 13px;
+            font-weight: 600; color: #1a3a5a; margin-bottom: 6px;
+        }
+        .form-group label .req { color: #b8942e; }
+
+        .form-control {
+            width: 100%; padding: 12px 16px;
+            border: 1.5px solid #d8dce4;
+            border-radius: 14px; font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            background: #fcfaf7; color: #0a2a44;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus {
+            border-color: #b8942e;
+            box-shadow: 0 0 0 4px rgba(184, 148, 46, 0.12);
+            background: #ffffff;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a6e8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px; cursor: pointer;
+        }
+
+        .list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .list-container::-webkit-scrollbar { width: 5px; }
+        .list-container::-webkit-scrollbar-track {
+            background: #f0ebe4; border-radius: 10px;
+        }
+        .list-container::-webkit-scrollbar-thumb {
+            background: #d4c5b0; border-radius: 10px;
+        }
+
+        .list-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            animation: fadeSlide 0.35s ease;
+        }
+        .list-item:last-child { border-bottom: none; }
+
+        .list-item .info {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+        }
+        .list-item .name {
+            font-weight: 600; color: #0a2a44; font-size: 15px;
+        }
+        .list-item .time { font-size: 12px; color: #7a8eaa; }
+
+        .empty-state {
+            text-align: center; padding: 40px 12px; color: #8a9aaa;
+        }
+        .empty-state i {
+            font-size: 40px; opacity: 0.3;
+            margin-bottom: 12px; display: block;
+        }
+
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast {
+            position: fixed; top: 30px; left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #0a2a44; color: #f5efe6;
+            padding: 18px 32px; border-radius: 20px;
+            font-size: 15px; font-weight: 500;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            display: flex; align-items: center; gap: 14px;
+            z-index: 999; opacity: 0; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            max-width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .toast .toast-icon { color: #d4af37; font-size: 22px; }
+        .toast .toast-msg { flex: 1; }
+        .toast .toast-msg strong { color: #d4af37; }
+        .toast .toast-close {
+            background: none; border: none;
+            color: #7a8eaa; font-size: 18px;
+            cursor: pointer;
+        }
+        .toast .toast-close:hover { color: #fff; }
+
+        footer {
+            margin-top: 32px; text-align: center;
+            font-size: 13px; color: #8a9aaa;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            padding-top: 20px;
+        }
+        footer i { color: #b8942e; }
+
+        .public-welcome {
+            background: linear-gradient(135deg, #0a2a44 0%, #1a3a5a 100%);
+            border-radius: 24px;
+            padding: 28px 32px;
+            color: #fff;
+            margin-bottom: 8px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(10, 42, 68, 0.15);
+        }
+        .public-welcome h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .public-welcome h2 span { color: #b8942e; }
+        .public-welcome p {
+            font-size: 14px;
+            color: #aabbcc;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .breakdown-grid { grid-template-columns: 1fr 1fr; }
+            .total-attendance-grid { grid-template-columns: 1fr; }
+            .card { padding: 20px 16px 24px; }
+            .header-left h1 { font-size: 22px; }
+            .btn { font-size: 13px; padding: 8px 14px; }
+            .toast { padding: 14px 20px; font-size: 14px; top: 16px; flex-wrap: wrap; justify-content: center; }
+            .login-card { padding: 32px 24px; }
+            .modal-card { padding: 28px 22px; }
+            .modal-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════
+         LOGIN OVERLAY
+    ═══════════════════════════════════════ -->
+    <div class="login-overlay hidden" id="loginOverlay">
+        <div class="login-card">
+            <div class="lock-icon"><i class="fas fa-lock"></i></div>
+            <h2>Axim <span>District</span></h2>
+            <p class="login-sub">Admin Access Only · Enter credentials to continue</p>
+
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-circle"></i> Incorrect credentials. Please try again.
+            </div>
+
+            <div class="input-wrap">
+                <label for="adminUser">Admin Username</label>
+                <i class="fas fa-user field-icon"></i>
+                <input type="text" id="adminUser" placeholder="Enter username" autocomplete="off" />
+            </div>
+
+            <div class="input-wrap">
+                <label for="adminPassword">Password</label>
+                <i class="fas fa-key field-icon"></i>
+                <input type="password" id="adminPassword" placeholder="Enter password" />
+            </div>
+
+            <button class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            </button>
+
+            <button class="login-cancel" id="loginCancel">← Back to Registration</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         CHANGE PASSWORD MODAL
+    ═══════════════════════════════════════ -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fas fa-key"></i></div>
+            <h3>Change Admin Password</h3>
+            <p class="modal-sub">Update your admin credentials below. You'll need to log in again after changing.</p>
+
+            <div class="modal-message" id="modalMessage"></div>
+
+            <div class="input-wrap">
+                <label for="currentPassword">Current Password</label>
+                <i class="fas fa-lock field-icon"></i>
+                <input type="password" id="currentPassword" placeholder="Enter current password" />
+            </div>
+
+            <div class="input-wrap">
+                <label for="newUsername">New Username</label>
+                <i class="fas fa-user field-icon"></i>
+                <input type="text" id="newUsername" placeholder="New username" autocomplete="off" />
+            </div>
+
+            <div class="input-wrap">
+                <label for="newPassword">New Password</label>
+                <i class="fas fa-key field-icon"></i>
+                <input type="password" id="newPassword" placeholder="Min 6 characters" />
+            </div>
+
+            <div class="input-wrap">
+                <label for="confirmPassword">Confirm New Password</label>
+                <i class="fas fa-key field-icon"></i>
+                <input type="password" id="confirmPassword" placeholder="Re-enter new password" />
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn btn-primary" id="modalSave"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon"><i class="fas fa-check-circle"></i></span>
+        <span class="toast-msg" id="toastMsg"><strong>John Doe</strong> · Registered!</span>
+        <button class="toast-close" id="toastClose"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         APP
+    ═══════════════════════════════════════ -->
+    <div class="app">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Axim <span>District</span></h1>
+                <div class="sub" id="headerSub">
+                    <i class="fas fa-church"></i> The Church of Pentecost · Attendance Registration
+                </div>
+            </div>
+            <div class="header-actions" id="headerActions">
+                <button class="btn btn-admin" id="adminLoginBtn">
+                    <i class="fas fa-user-shield"></i> Admin Login
+                </button>
+            </div>
+        </header>
+
+        <!-- PUBLIC VIEW -->
+        <div id="publicView">
+            <div class="public-grid">
+                <div class="public-welcome">
+                    <h2>Welcome to <span>Axim District</span></h2>
+                    <p>Please register your attendance below.<br />God bless you as you worship with us today.</p>
+                </div>
+
+                <section class="card">
+                    <div class="card-title">
+                        <i class="fas fa-user-plus"></i> Register Attendance
+                    </div>
+
+                    <form id="publicRegisterForm" autocomplete="off">
+                        <div class="form-group">
+                            <label for="publicFullName">Full Name <span class="req">*</span></label>
+                            <input type="text" id="publicFullName" class="form-control" placeholder="e.g. Sarah Johnson" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="publicCategorySelect">Category <span class="req">*</span></label>
+                            <select id="publicCategorySelect" class="form-control" required>
+                                <option value="">— Select —</option>
+                                <option value="pastor">Pastor</option>
+                                <option value="apostle">Apostle</option>
+                                <option value="visitors">Visitors</option>
+                                <option value="members">Member</option>
+                                <option value="deacons">Deacons</option>
+                                <option value="elders">Elders</option>
+                                <option value="children">Children</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                            <i class="fas fa-pen-fancy"></i> Register
+                        </button>
+                    </form>
+
+                    <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.04);display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+                        <span class="category-badge cat-pastor">Pastor</span>
+                        <span class="category-badge cat-apostle">Apostle</span>
+                        <span class="category-badge cat-visitors">Visitors</span>
+                        <span class="category-badge cat-members">Member</span>
+                        <span class="category-badge cat-deacons">Deacons</span>
+                        <span class="category-badge cat-elders">Elders</span>
+                        <span class="category-badge cat-children">Children</span>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ADMIN VIEW -->
+        <div id="adminView" style="display:none;">
+
+            <!-- Total Attendance Section -->
+            <section class="total-attendance-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Total Attendance Overview
+                    <span style="font-size:14px;font-weight:400;color:#88aacc;margin-left:8px;">
+                        <i class="fas fa-calendar-alt"></i> 
+                        <span id="overviewDate"></span>
+                    </span>
+                </div>
+
+                <div class="total-attendance-grid">
+                    <div class="total-stat">
+                        <div class="big-number" id="grandTotal">0</div>
+                        <div class="stat-label">Total Attendance</div>
+                        <div class="stat-detail">All-time record</div>
+                    </div>
+                    <div class="total-stat">
+                        <div class="big-number" id="todayTotal">0</div>
+                        <div class="stat-label">Today's Attendance</div>
+                        <div class="stat-detail" id="todayDateDetail"></div>
+                    </div>
+                    <div class="total-stat">
+                        <div class="big-number" id="weekTotal">0</div>
+                        <div class="stat-label">This Week</div>
+                        <div class="stat-detail" id="weekRange"></div>
+                    </div>
+                    <div class="total-stat">
+                        <div class="big-number" id="monthTotal">0</div>
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-detail" id="monthRange"></div>
+                    </div>
+                </div>
+
+                <div class="total-attendance-actions">
+                    <button class="btn btn-primary" onclick="document.getElementById('adminRegisterSection').scrollIntoView({behavior:'smooth'})">
+                        <i class="fas fa-user-plus"></i> Register New
+                    </button>
+                    <button class="btn" onclick="document.querySelector('.breakdown-grid').scrollIntoView({behavior:'smooth',block:'start'})">
+                        <i class="fas fa-list-ul"></i> View Breakdown
+                    </button>
+                    <button class="btn" id="exportFullReport">
+                        <i class="fas fa-file-pdf"></i> Full Report
+                    </button>
+                </div>
+            </section>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number gold" id="totalCount">0</div>
+                    <div class="label">Total Attendance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="todayCount">0</div>
+                    <div class="label">Today</div>
+                    <div class="sub-label" id="todayDate"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="membersWeekCount">0</div>
+                    <div class="label">Members</div>
+                    <div class="sub-label">this week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="categoryCount">0</div>
+                    <div class="label">Categories</div>
+                    <div class="sub-label">represented</div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="breakdown-grid" id="breakdownContainer"></div>
+
+            <!-- Grid: Register + Log -->
+            <div class="grid">
+                <section class="card" id="adminRegisterSection">
+                    <div class="card-title">
+                        <i class="fas fa-user-plus"></i> Register Attendance
+                    </div>
+
+                    <form id="adminRegisterForm" autocomplete="off">
+                        <div class="form-group">
+                            <label for="adminFullName">Full Name <span class="req">*</span></label>
+                            <input type="text" id="adminFullName" class="form-control" placeholder="e.g. Sarah Johnson" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="adminCategorySelect">Category <span class="req">*</span></label>
+                            <select id="adminCategorySelect" class="form-control" required>
+                                <option value="">— Select —</option>
+                                <option value="pastor">Pastor</option>
+                                <option value="apostle">Apostle</option>
+                                <option value="visitors">Visitors</option>
+                                <option value="members">Member</option>
+                                <option value="deacons">Deacons</option>
+                                <option value="elders">Elders</option>
+                                <option value="children">Children</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                            <i class="fas fa-pen-fancy"></i> Register
+                        </button>
+                    </form>
+
+                    <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.04);display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+                        <span class="category-badge cat-pastor">Pastor</span>
+                        <span class="category-badge cat-apostle">Apostle</span>
+                        <span class="category-badge cat-visitors">Visitors</span>
+                        <span class="category-badge cat-members">Member</span>
+                        <span class="category-badge cat-deacons">Deacons</span>
+                        <span class="category-badge cat-elders">Elders</span>
+                        <span class="category-badge cat-children">Children</span>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-title">
+                        <i class="fas fa-list-ul"></i> Attendance Log
+                        <span style="margin-left:auto;font-size:13px;font-weight:400;color:#5a6e8a;" id="listCount">0</span>
+                    </div>
+
+                    <div class="list-container" id="listContainer">
+                        <div class="empty-state" id="emptyState">
+                            <i class="fas fa-users-slash"></i>
+                            <p>No records yet.</p>
+                        </div>
+                        <div id="listItems"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <footer>
+            <i class="fas fa-cross" style="margin-right:6px;"></i>
+            Axim District · The Church of Pentecost
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ═══════════════════════════════════════
+            // CREDENTIALS (stored in localStorage)
+            // ═══════════════════════════════════════
+            const DEFAULT_USERNAME = 'admin';
+            const DEFAULT_PASSWORD = 'axim2024';
+            const CRED_KEY = 'axim_admin_credentials';
+            const SESSION_KEY = 'axim_admin_session';
+
+            function getCredentials() {
+                try {
+                    const stored = localStorage.getItem(CRED_KEY);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && parsed.username && parsed.password) return parsed;
+                    }
+                } catch {}
+                return { username: DEFAULT_USERNAME, password: DEFAULT_PASSWORD };
+            }
+
+            function saveCredentials(username, password) {
+                localStorage.setItem(CRED_KEY, JSON.stringify({ username, password }));
+            }
+
+            // ─── DOM refs: Login ───
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginCancel = document.getElementById('loginCancel');
+            const adminUser = document.getElementById('adminUser');
+            const adminPassword = document.getElementById('adminPassword');
+            const loginError = document.getElementById('loginError');
+            const adminLoginBtn = document.getElementById('adminLoginBtn');
+
+            // ─── DOM refs: Password Modal ───
+            const passwordModal = document.getElementById('passwordModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const currentPassword = document.getElementById('currentPassword');
+            const newUsername = document.getElementById('newUsername');
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const modalCancel = document.getElementById('modalCancel');
+            const modalSave = document.getElementById('modalSave');
+
+            // ─── DOM refs: Views ───
+            const publicView = document.getElementById('publicView');
+            const adminView = document.getElementById('adminView');
+            const headerActions = document.getElementById('headerActions');
+            const headerSub = document.getElementById('headerSub');
+
+            // ─── DOM refs: Public form ───
+            const publicForm = document.getElementById('publicRegisterForm');
+            const publicFullName = document.getElementById('publicFullName');
+            const publicCategorySelect = document.getElementById('publicCategorySelect');
+
+            // ─── DOM refs: Admin form ───
+            const adminForm = document.getElementById('adminRegisterForm');
+            const adminFullName = document.getElementById('adminFullName');
+            const adminCategorySelect = document.getElementById('adminCategorySelect');
+
+            // ─── DOM refs: Dashboard ───
+            const listItemsEl = document.getElementById('listItems');
+            const emptyState = document.getElementById('emptyState');
+            const totalCountEl = document.getElementById('totalCount');
+            const todayCountEl = document.getElementById('todayCount');
+            const listCountEl = document.getElementById('listCount');
+            const membersWeekCountEl = document.getElementById('membersWeekCount');
+            const categoryCountEl = document.getElementById('categoryCount');
+            const breakdownContainer = document.getElementById('breakdownContainer');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastClose = document.getElementById('toastClose');
+            const todayDateEl = document.getElementById('todayDate');
+            const todayDateDetail = document.getElementById('todayDateDetail');
+
+            const grandTotalEl = document.getElementById('grandTotal');
+            const todayTotalEl = document.getElementById('todayTotal');
+            const weekTotalEl = document.getElementById('weekTotal');
+            const monthTotalEl = document.getElementById('monthTotal');
+            const overviewDateEl = document.getElementById('overviewDate');
+            const weekRangeEl = document.getElementById('weekRange');
+            const monthRangeEl = document.getElementById('monthRange');
+            const exportFullReport = document.getElementById('exportFullReport');
+
+            // ─── State ───
+            let attendees = [];
+            let isAdmin = false;
+
+            // ═══════════════════════════════════════
+            // SESSION / VIEW SWITCHING
+            // ═══════════════════════════════════════
+            function checkSession() {
+                const session = sessionStorage.getItem(SESSION_KEY);
+                if (session === 'active') {
+                    isAdmin = true;
+                    showAdminView();
+                } else {
+                    isAdmin = false;
+                    showPublicView();
+                }
+            }
+
+            function showPublicView() {
+                publicView.style.display = 'block';
+                adminView.style.display = 'none';
+                headerSub.innerHTML = '<i class="fas fa-church"></i> The Church of Pentecost · Attendance Registration';
+                headerActions.innerHTML = `
+                    <button class="btn btn-admin" id="adminLoginBtn">
+                        <i class="fas fa-user-shield"></i> Admin Login
+                    </button>
+                `;
+                document.getElementById('adminLoginBtn').addEventListener('click', openLogin);
+                publicFullName.focus();
+            }
+
+            function showAdminView() {
+                publicView.style.display = 'none';
+                adminView.style.display = 'block';
+                headerSub.innerHTML = '<i class="fas fa-user-shield"></i> Admin Dashboard · The Church of Pentecost';
+                headerActions.innerHTML = `
+                    <button class="btn btn-pdf" id="generatePdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                    <button class="btn btn-settings" id="changePassBtn"><i class="fas fa-key"></i> Change Password</button>
+                    <button class="btn btn-secondary" id="clearBtn"><i class="fas fa-trash-alt"></i> Clear All</button>
+                    <button class="btn btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                `;
+                document.getElementById('generatePdfBtn').addEventListener('click', () => generatePDF(false));
+                document.getElementById('changePassBtn').addEventListener('click', openPasswordModal);
+                document.getElementById('clearBtn').addEventListener('click', clearAll);
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+
+                initAdminView();
+                adminFullName.focus();
+            }
+
+            // ═══════════════════════════════════════
+            // LOGIN
+            // ═══════════════════════════════════════
+            function openLogin() {
+                loginOverlay.classList.remove('hidden');
+                setTimeout(() => adminUser.focus(), 300);
+            }
+
+            function closeLogin() {
+                loginOverlay.classList.add('hidden');
+                adminUser.value = '';
+                adminPassword.value = '';
+                loginError.classList.remove('show');
+            }
+
+            function attemptLogin() {
+                const user = adminUser.value.trim();
+                const pass = adminPassword.value;
+                const creds = getCredentials();
+
+                if (user === creds.username && pass === creds.password) {
+                    sessionStorage.setItem(SESSION_KEY, 'active');
+                    isAdmin = true;
+                    closeLogin();
+                    showAdminView();
+                } else {
+                    loginError.classList.add('show');
+                    adminPassword.value = '';
+                    adminPassword.focus();
+                    setTimeout(() => loginError.classList.remove('show'), 2500);
+                }
+            }
+
+            function logout() {
+                if (confirm('Log out of the admin dashboard?')) {
+                    sessionStorage.removeItem(SESSION_KEY);
+                    isAdmin = false;
+                    showPublicView();
+                }
+            }
+
+            adminLoginBtn.addEventListener('click', openLogin);
+            loginBtn.addEventListener('click', attemptLogin);
+            loginCancel.addEventListener('click', closeLogin);
+
+            adminPassword.addEventListener('keydown', e => {
+                if (e.key === 'Enter') attemptLogin();
+            });
+            adminUser.addEventListener('keydown', e => {
+                if (e.key === 'Enter') adminPassword.focus();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && !loginOverlay.classList.contains('hidden')) {
+                    closeLogin();
+                }
+            });
+
+            // ═══════════════════════════════════════
+            // CHANGE PASSWORD MODAL
+            // ═══════════════════════════════════════
+            function openPasswordModal() {
+                currentPassword.value = '';
+                newUsername.value = '';
+                newPassword.value = '';
+                confirmPassword.value = '';
+                modalMessage.className = 'modal-message';
+                modalMessage.textContent = '';
+                passwordModal.classList.add('show');
+                setTimeout(() => currentPassword.focus(), 200);
+            }
+
+            function closePasswordModal() {
+                passwordModal.classList.remove('show');
+            }
+
+            function showModalMessage(text, type) {
+                modalMessage.textContent = text;
+                modalMessage.className = 'modal-message ' + type;
+            }
+
+            modalCancel.addEventListener('click', closePasswordModal);
+
+            passwordModal.addEventListener('click', e => {
+                if (e.target === passwordModal) closePasswordModal();
+            });
+
+            modalSave.addEventListener('click', function() {
+                const current = currentPassword.value;
+                const newUser = newUsername.value.trim();
+                const newPass = newPassword.value;
+                const confirm = confirmPassword.value;
+                const creds = getCredentials();
+
+                // Validations
+                if (!current) {
+                    showModalMessage('Please enter your current password.', 'error');
+                    currentPassword.focus();
+                    return;
+                }
+                if (current !== creds.password) {
+                    showModalMessage('Current password is incorrect.', 'error');
+                    currentPassword.focus();
+                    return;
+                }
+                if (!newUser) {
+                    showModalMessage('Please enter a new username.', 'error');
+                    newUsername.focus();
+                    return;
+                }
+                if (newUser.length < 3) {
+                    showModalMessage('Username must be at least 3 characters.', 'error');
+                    newUsername.focus();
+                    return;
+                }
+                if (!newPass) {
+                    showModalMessage('Please enter a new password.', 'error');
+                    newPassword.focus();
+                    return;
+                }
+                if (newPass.length < 6) {
+                    showModalMessage('Password must be at least 6 characters.', 'error');
+                    newPassword.focus();
+                    return;
+                }
+                if (newPass !== confirm) {
+                    showModalMessage('New passwords do not match.', 'error');
+                    confirmPassword.focus();
+                    return;
+                }
+                if (newUser === creds.username && newPass === creds.password) {
+                    showModalMessage('New credentials are the same as the current ones.', 'error');
+                    return;
+                }
+
+                // Save
+                saveCredentials(newUser, newPass);
+                showModalMessage('Password changed successfully! Logging you out…', 'success');
+
+                setTimeout(() => {
+                    closePasswordModal();
+                    sessionStorage.removeItem(SESSION_KEY);
+                    isAdmin = false;
+                    showPublicView();
+                    showToastMessage('Password updated successfully. Please log in again.');
+                }, 1500);
+            });
+
+            // ═══════════════════════════════════════
+            // INITIALIZATION
+            // ═══════════════════════════════════════
+            let adminInitialized = false;
+
+            function initAdminView() {
+                const today = new Date();
+                const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+                todayDateEl.textContent = today.toLocaleDateString('en-GB', dateOptions);
+                todayDateDetail.textContent = today.toLocaleDateString('en-GB', dateOptions);
+                overviewDateEl.textContent = today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+                if (!adminInitialized) {
+                    adminInitialized = true;
+                    adminForm.addEventListener('submit', e => handleFormSubmit(e, adminFullName, adminCategorySelect));
+                    exportFullReport.addEventListener('click', () => generatePDF(true));
+                }
+                render();
+            }
+
+            // ═══════════════════════════════════════
+            // PUBLIC FORM
+            // ═══════════════════════════════════════
+            publicForm.addEventListener('submit', e => handleFormSubmit(e, publicFullName, publicCategorySelect));
+
+            function handleFormSubmit(e, nameEl, catEl) {
+                e.preventDefault();
+                const name = nameEl.value.trim();
+                const category = catEl.value;
+
+                if (!name) {
+                    nameEl.focus();
+                    nameEl.style.borderColor = '#d94f14';
+                    setTimeout(() => nameEl.style.borderColor = '', 800);
+                    return;
+                }
+                if (!category) {
+                    catEl.focus();
+                    catEl.style.borderColor = '#d94f14';
+                    setTimeout(() => catEl.style.borderColor = '', 800);
+                    return;
+                }
+
+                attendees.push({
+                    id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                    name: name,
+                    category: category,
+                    timestamp: Date.now(),
+                });
+                saveData();
+
+                if (isAdmin) render();
+                showToast(name, category);
+
+                nameEl.value = '';
+                catEl.value = '';
+                nameEl.focus();
+            }
+
+            // ═══════════════════════════════════════
+            // DATA
+            // ═══════════════════════════════════════
+            function loadData() {
+                const stored = localStorage.getItem('axim_attendees');
+                if (stored) {
+                    try {
+                        attendees = JSON.parse(stored);
+                        attendees = attendees.filter(a => a && a.name).map(a => ({
+                            ...a,
+                            id: a.id || Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                            category: a.category === 'newmembers' ? 'members' : a.category
+                        }));
+                    } catch { attendees = []; }
+                } else {
+                    const now = Date.now();
+                    attendees = [
+                        { id: 'seed1', name: 'Apostle Michael', category: 'apostle', timestamp: now - 7200000 },
+                        { id: 'seed2', name: 'Elder Samuel', category: 'elders', timestamp: now - 3600000 },
+                        { id: 'seed3', name: 'Grace Addo', category: 'members', timestamp: now - 1800000 },
+                        { id: 'seed4', name: 'Pastor James', category: 'pastor', timestamp: now - 900000 },
+                        { id: 'seed5', name: 'Mary Asare', category: 'visitors', timestamp: now - 300000 },
+                        { id: 'seed6', name: 'David Mensah', category: 'children', timestamp: now - 120000 },
+                    ];
+                }
+                saveData();
+            }
+
+            function saveData() {
+                localStorage.setItem('axim_attendees', JSON.stringify(attendees));
+            }
+
+            function clearAll() {
+                if (attendees.length === 0) return;
+                if (confirm('Clear all attendance records?')) {
+                    attendees = [];
+                    saveData();
+                    render();
+                    toast.classList.remove('show');
+                    clearTimeout(toastTimer);
+                }
+            }
+
+            // ═══════════════════════════════════════
+            // HELPERS
+            // ═══════════════════════════════════════
+            function getTodayStart() {
+                const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime();
+            }
+            function getWeekStart() {
+                const d = new Date();
+                d.setDate(d.getDate() - d.getDay());
+                d.setHours(0, 0, 0, 0);
+                return d.getTime();
+            }
+            function getMonthStart() {
+                const d = new Date();
+                d.setDate(1);
+                d.setHours(0, 0, 0, 0);
+                return d.getTime();
+            }
+            function formatTime(ts) {
+                return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            function getCategoryLabel(cat) {
+                const map = {
+                    pastor: 'Pastor', apostle: 'Apostle', visitors: 'Visitors',
+                    members: 'Member', deacons: 'Deacons', elders: 'Elders', children: 'Children'
+                };
+                return map[cat] || cat;
+            }
+            function getCategoryClass(cat) { return 'cat-' + cat; }
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ═══════════════════════════════════════
+            // RENDER (Admin Dashboard)
+            // ═══════════════════════════════════════
+            function render() {
+                if (!isAdmin) return;
+
+                const sorted = [...attendees].sort((a, b) => b.timestamp - a.timestamp);
+                const total = attendees.length;
+                const todayStart = getTodayStart();
+                const weekStart = getWeekStart();
+                const monthStart = getMonthStart();
+
+                const todayCount = attendees.filter(a => a.timestamp >= todayStart).length;
+                const weekCount = attendees.filter(a => a.timestamp >= weekStart).length;
+                const monthCount = attendees.filter(a => a.timestamp >= monthStart).length;
+
+                const membersWeekCount = attendees.filter(a =>
+                    a.category === 'members' && a.timestamp >= weekStart
+                ).length;
+
+                const catCount = new Set(attendees.map(a => a.category)).size;
+
+                grandTotalEl.textContent = total;
+                todayTotalEl.textContent = todayCount;
+                weekTotalEl.textContent = weekCount;
+                monthTotalEl.textContent = monthCount;
+
+                const weekStartDate = new Date(weekStart);
+                const weekEndDate = new Date(weekStart + 6 * 24 * 60 * 60 * 1000);
+                weekRangeEl.textContent = `${weekStartDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${weekEndDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+                const monthStartDate = new Date(monthStart);
+                monthRangeEl.textContent = `${monthStartDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+
+                const catMap = {};
+                attendees.forEach(a => { catMap[a.category] = (catMap[a.category] || 0) + 1; });
+
+                const categoryLabels = {
+                    pastor: 'Pastor', apostle: 'Apostle', visitors: 'Visitors',
+                    members: 'Member', deacons: 'Deacons', elders: 'Elders', children: 'Children'
+                };
+
+                let breakdownHTML = '';
+                Object.keys(categoryLabels).forEach(key => {
+                    const count = catMap[key] || 0;
+                    const cls = getCategoryClass(key);
+                    breakdownHTML += `
+                        <div class="breakdown-item">
+                            <span class="category-badge ${cls}">${categoryLabels[key]}</span>
+                            <span class="cat-count">${count}</span>
+                        </div>
+                    `;
+                });
+                breakdownContainer.innerHTML = breakdownHTML;
+
+                totalCountEl.textContent = total;
+                todayCountEl.textContent = todayCount;
+                membersWeekCountEl.textContent = membersWeekCount;
+                categoryCountEl.textContent = catCount;
+                listCountEl.textContent = sorted.length;
+
+                if (sorted.length === 0) {
+                    emptyState.style.display = 'block';
+                    listItemsEl.innerHTML = '';
+                } else {
+                    emptyState.style.display = 'none';
+                    listItemsEl.innerHTML = sorted.map(a => {
+                        const catLabel = getCategoryLabel(a.category);
+                        const catClass = getCategoryClass(a.category);
+                        return `
+                            <div class="list-item">
+                                <div class="info">
+                                    <span class="name">${escapeHtml(a.name)}</span>
+                                    <span class="category-badge ${catClass}">${catLabel}</span>
+                                </div>
+                                <span class="time"><i class="far fa-clock" style="margin-right:4px;"></i>${formatTime(a.timestamp)}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // ═══════════════════════════════════════
+            // TOAST
+            // ═══════════════════════════════════════
+            let toastTimer = null;
+            function showToast(name, category) {
+                const catLabel = getCategoryLabel(category);
+                toastMsg.innerHTML = `<strong>${escapeHtml(name)}</strong> · ${catLabel} · Registered!`;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+            }
+
+            function showToastMessage(message) {
+                toastMsg.innerHTML = message;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
+            }
+
+            toastClose.addEventListener('click', () => {
+                toast.classList.remove('show');
+                clearTimeout(toastTimer);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (toast.classList.contains('show') && !toast.contains(e.target)) {
+                    toast.classList.remove('show');
+                    clearTimeout(toastTimer);
+                }
+            });
+
+            // ═══════════════════════════════════════
+            // PDF GENERATION
+            // ═══════════════════════════════════════
+            function generatePDF(fullReport = false) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = 210;
+                const margin = 20;
+                let y = margin;
+
+                const gold = '#b8942e';
+                const navy = '#0a2a44';
+
+                doc.setFontSize(22);
+                doc.setTextColor(navy);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Axim District', pageWidth / 2, y, { align: 'center' });
+                y += 9;
+                doc.setFontSize(12);
+                doc.setTextColor(gold);
+                doc.text('The Church of Pentecost', pageWidth / 2, y, { align: 'center' });
+                y += 10;
+
+                doc.setFontSize(14);
+                doc.setTextColor(navy);
+                doc.text(fullReport ? 'Complete Attendance Report' : 'Attendance Summary Report', pageWidth / 2, y, { align: 'center' });
+                y += 12;
+
+                doc.setFontSize(11);
+                doc.setTextColor('#4a5e7a');
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                doc.text(`Generated: ${dateStr}`, pageWidth / 2, y, { align: 'center' });
+                y += 12;
+
+                doc.setDrawColor(gold);
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += 10;
+
+                const total = attendees.length;
+                const todayStart = getTodayStart();
+                const todayCount = attendees.filter(a => a.timestamp >= todayStart).length;
+                const weekStart = getWeekStart();
+                const weekCount = attendees.filter(a => a.timestamp >= weekStart).length;
+                const monthStart = getMonthStart();
+                const monthCount = attendees.filter(a => a.timestamp >= monthStart).length;
+
+                doc.setFontSize(12);
+                doc.setTextColor(navy);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Total Attendance: ${total}`, margin, y); y += 7;
+                doc.text(`Today: ${todayCount}`, margin, y); y += 7;
+                doc.text(`This Week: ${weekCount}`, margin, y); y += 7;
+                doc.text(`This Month: ${monthCount}`, margin, y); y += 10;
+
+                const catMap = {};
+                attendees.forEach(a => { catMap[a.category] = (catMap[a.category] || 0) + 1; });
+
+                const labels = {
+                    pastor: 'Pastor', apostle: 'Apostle', visitors: 'Visitors',
+                    members: 'Member', deacons: 'Deacons', elders: 'Elders', children: 'Children'
+                };
+
+                doc.setFontSize(13);
+                doc.setTextColor(navy);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Category Breakdown:', margin, y);
+                y += 8;
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                Object.keys(labels).forEach(key => {
+                    const count = catMap[key] || 0;
+                    doc.text(`• ${labels[key]}: ${count}`, margin + 4, y);
+                    y += 7;
+                });
+
+                y += 6;
+
+                if (fullReport) {
+                    doc.setFontSize(13);
+                    doc.setTextColor(navy);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Full Attendance Log:', margin, y);
+                    y += 8;
+
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor('#0a2a44');
+
+                    const sorted = [...attendees].sort((a, b) => b.timestamp - a.timestamp);
+
+                    if (sorted.length === 0) {
+                        doc.text('No records.', margin, y);
+                    } else {
+                        sorted.forEach((a, idx) => {
+                            if (y > 270) { doc.addPage(); y = margin; }
+                            const time = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const catLabel = getCategoryLabel(a.category);
+                            doc.text(`${idx + 1}. ${a.name} (${catLabel}) · ${time}`, margin, y);
+                            y += 6;
+                        });
+                    }
+                }
+
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(9);
+                    doc.setTextColor('#8a9aaa');
+                    doc.text('Axim District · The Church of Pentecost · Admin Report', pageWidth / 2, 285, { align: 'center' });
+                }
+
+                doc.save(fullReport ? 'Axim_District_Full_Report.pdf' : 'Axim_District_Attendance_Summary.pdf');
+            }
+
+            // ═══════════════════════════════════════
+            // BOOT
+            // ═══════════════════════════════════════
+            loadData();
+            checkSession();
+
+        })();
+    </script>
+
+</body>
+</html>
